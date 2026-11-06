@@ -174,8 +174,8 @@ class SpeechRecognitionService {
   }
 
   /**
-   * Genuine pronunciation assessment comparing student's spoken words with target text.
-   * No fabricated 75% scores. Real matching with clear age-appropriate feedback.
+   * Word-recognition matching against the expected text, NOT a phoneme-level pronunciation assessment.
+   * No fabricated 75% scores. The score represents recognized word alignment, not sound quality.
    */
   private evaluatePronunciation(expectedText: string, transcript: string): SpeechAssessmentResult {
     const cleanExpected = expectedText
@@ -203,27 +203,46 @@ class SpeechRecognitionService {
       };
     }
 
-    let matchedCount = 0;
-    const wordBreakdown = cleanExpected.map(word => {
-      const found = cleanTranscript.includes(word);
-      if (found) matchedCount++;
-      return {
-        word,
-        matched: found
-      };
-    });
-
-    const matchRatio = cleanExpected.length > 0 ? matchedCount / cleanExpected.length : 0;
-    const accuracyScore = Math.min(100, Math.round(matchRatio * 100));
-    
-    // Length ratio checks fluency/completeness
-    const lengthRatio = Math.min(1, cleanTranscript.length / Math.max(1, cleanExpected.length));
-    const fluencyScore = Math.min(100, Math.round(lengthRatio * 100));
-    const overallScore = Math.round((accuracyScore * 0.75) + (fluencyScore * 0.25));
+    // Ordered word alignment prevents one spoken word from matching multiple
+    // repeated target words and prevents shuffled words from earning full credit.
+    const n = cleanExpected.length;
+    const m = cleanTranscript.length;
+    const dp: number[][] = Array.from({ length: n + 1 }, () => Array(m + 1).fill(0));
+    for (let i = n - 1; i >= 0; i--) {
+      for (let j = m - 1; j >= 0; j--) {
+        dp[i][j] = cleanExpected[i] === cleanTranscript[j]
+          ? 1 + dp[i + 1][j + 1]
+          : Math.max(dp[i + 1][j], dp[i][j + 1]);
+      }
+    }
+    const matchedIndices = new Set<number>();
+    let i = 0;
+    let j = 0;
+    while (i < n && j < m) {
+      if (cleanExpected[i] === cleanTranscript[j]) {
+        matchedIndices.add(i);
+        i++;
+        j++;
+      } else if (dp[i + 1][j] >= dp[i][j + 1]) {
+        i++;
+      } else {
+        j++;
+      }
+    }
+    const matchedCount = matchedIndices.size;
+    const wordBreakdown = cleanExpected.map((word, index) => ({
+      word,
+      matched: matchedIndices.has(index)
+    }));
+    const accuracyScore = n ? Math.round((matchedCount / n) * 100) : 0;
+    // Completeness is not acoustic fluency. The Web Speech API does not
+    // provide reliable timing or phoneme-level scores.
+    const fluencyScore = n ? Math.round((matchedCount / n) * 100) : 0;
+    const overallScore = accuracyScore;
 
     let feedback = '';
     if (overallScore >= 85) {
-      feedback = `Excellent reading! You read ${matchedCount} of ${cleanExpected.length} words accurately with great fluency.`;
+      feedback = `Excellent reading! You read ${matchedCount} of ${cleanExpected.length} words accurately in the expected order.`;
     } else if (overallScore >= 70) {
       feedback = `Good job! You read ${matchedCount} of ${cleanExpected.length} words correctly. Listen to the page audio once more to perfect tricky words!`;
     } else {
