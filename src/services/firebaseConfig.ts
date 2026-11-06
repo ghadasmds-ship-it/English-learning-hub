@@ -2,11 +2,10 @@
  * Firebase Integration Foundation & Diagnostic Module
  *
  * This platform architecture is built for Google Cloud Firestore and Firebase Auth.
- * When environment variables (VITE_FIREBASE_API_KEY, VITE_FIREBASE_PROJECT_ID, etc.)
- * are configured, live Cloud Firestore persistence is activated.
+ * Environment variables alone do not activate Firebase Authentication or Firestore.
+ * Cloud persistence must be explicitly implemented and verified before production use.
  * In development or pilot mode when env vars are unpopulated, the dual-engine storage
- * transparently operates in persistent local mode, ensuring complete pilot testability
- * without broken promises or security bypasses.
+ * currently uses browser-local pilot storage. This is not a secure multi-tenant backend.
  */
 
 export interface FirebaseConnectionStatus {
@@ -37,7 +36,7 @@ export function getFirebaseConnectionStatus(): FirebaseConnectionStatus {
     projectId: env.VITE_FIREBASE_PROJECT_ID || undefined,
     authDomain: env.VITE_FIREBASE_AUTH_DOMAIN || undefined,
     storageBucket: env.VITE_FIREBASE_STORAGE_BUCKET || undefined,
-    mode: isConfigured ? 'live_cloud' : 'local_storage_pilot',
+    mode: 'local_storage_pilot',
     missingEnvVars: missing
   };
 }
