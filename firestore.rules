@@ -9,8 +9,7 @@ service cloud.firestore {
 
     function isPlatformAdmin() {
       return isAuthenticated() && 
-        (request.auth.token.role == 'admin' || 
-         request.auth.token.email == 'admin@englishlearninghub.com');
+        request.auth.token.role == 'admin';
     }
 
     function isTeacher(teacherId) {
@@ -41,8 +40,8 @@ service cloud.firestore {
     // Teachers Collection
     match /teachers/{teacherId} {
       allow read: if isTeacher(teacherId) || isPlatformAdmin();
-      allow create: if isAuthenticated() && request.auth.uid == teacherId;
-      allow update: if (isTeacher(teacherId) && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['licenseExpiresAt', 'isReadOnly'])) || isPlatformAdmin();
+      allow create: if isPlatformAdmin();
+      allow update: if isPlatformAdmin() || (isTeacher(teacherId) && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['licenseExpiresAt', 'isReadOnly', 'role', 'id', 'teacherId', 'subscriptionStatus', 'licenseId', 'plan', 'isAdmin']));
       allow delete: if isPlatformAdmin();
     }
 
@@ -55,7 +54,8 @@ service cloud.firestore {
       );
       // Teachers can only create/update/delete classes if subscription is active
       allow create: if isAuthenticated() && isTeacherActive(request.resource.data.teacherId);
-      allow update, delete: if isAuthenticated() && isTeacherActive(resource.data.teacherId);
+      allow update: if isAuthenticated() && isTeacherActive(resource.data.teacherId) && request.resource.data.teacherId == resource.data.teacherId;
+      allow delete: if isAuthenticated() && isTeacherActive(resource.data.teacherId);
     }
 
     // Students: Multi-tenant isolated to teacherId & classId
@@ -80,7 +80,7 @@ service cloud.firestore {
         request.auth.uid == request.resource.data.studentId ||
         isTeacher(request.resource.data.teacherId)
       );
-      allow update: if isAuthenticated() && isTeacher(resource.data.teacherId);
+      allow update: if false; // Attempts are immutable audit records
       allow delete: if false; // Immutable audit trail
     }
 
@@ -91,17 +91,16 @@ service cloud.firestore {
         request.auth.uid == studentId ||
         isPlatformAdmin()
       );
-      allow write: if isAuthenticated() && (
-        resource.data.teacherId == request.auth.uid ||
-        request.auth.uid == studentId ||
-        isPlatformAdmin()
-      );
+      allow create: if isAuthenticated() && (isTeacherActive(request.resource.data.teacherId) || (request.auth.uid == studentId && request.resource.data.studentId == studentId));
+      allow update: if isAuthenticated() && request.resource.data.teacherId == resource.data.teacherId && (isTeacherActive(resource.data.teacherId) || request.auth.uid == studentId);
+      allow delete: if isPlatformAdmin();
     }
 
     // Secure Parent Report Links: Verified token validation
     match /parentReportLinks/{linkId} {
-      allow read: if true; // Accessed via public parent token check
-      allow create, update: if isAuthenticated() && isTeacher(request.resource.data.teacherId);
+      allow read: if isPlatformAdmin() || (isAuthenticated() && resource.data.teacherId == request.auth.uid); // Never expose token records publicly
+      allow create: if isAuthenticated() && isTeacherActive(request.resource.data.teacherId);
+      allow update: if isAuthenticated() && isTeacherActive(resource.data.teacherId) && request.resource.data.teacherId == resource.data.teacherId;
       allow delete: if isAuthenticated() && isTeacher(resource.data.teacherId);
     }
   }
