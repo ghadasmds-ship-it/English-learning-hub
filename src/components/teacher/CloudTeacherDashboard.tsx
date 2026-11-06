@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { importStudentNames } from '../../services/studentImportService';
 import { createTeacherClass, listTeacherClasses, listTeacherStudents, type CloudClass, type CloudStudentSummary } from '../../services/teacherCloudRepository';
 
 export function CloudTeacherDashboard({ teacherId }: { teacherId: string }) {
@@ -13,6 +14,9 @@ export function CloudTeacherDashboard({ teacherId }: { teacherId: string }) {
   const [section, setSection] = useState('A');
   const [academicYear, setAcademicYear] = useState('2026-2027');
   const [classCode, setClassCode] = useState('');
+  const [selectedClassId, setSelectedClassId] = useState('');
+  const [studentNames, setStudentNames] = useState('');
+  const [importResult, setImportResult] = useState('');
 
   async function reload() {
     setLoading(true);
@@ -46,6 +50,23 @@ export function CloudTeacherDashboard({ teacherId }: { teacherId: string }) {
     }
   }
 
+  async function submitStudents(event: React.FormEvent) {
+    event.preventDefault();
+    setSaving(true);
+    setError('');
+    setImportResult('');
+    try {
+      const count = await importStudentNames(teacherId, selectedClassId, studentNames);
+      setImportResult(`Added ${count} students. Existing names in this class were skipped.`);
+      setStudentNames('');
+      await reload();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setSaving(false);
+    }
+  }
+
   return (
     <section className="max-w-5xl mx-auto px-4 py-10 space-y-7">
       <div>
@@ -64,6 +85,21 @@ export function CloudTeacherDashboard({ teacherId }: { teacherId: string }) {
           <label className="text-sm">Class code<input required value={classCode} onChange={e => setClassCode(e.target.value)} className="block border rounded-lg p-2 w-full mt-1" /></label>
         </div>
         <button disabled={saving} type="submit" className="rounded-xl bg-indigo-700 text-white px-5 py-2 font-bold disabled:opacity-50">{saving ? 'Saving…' : 'Add Class'}</button>
+      </form>
+      <form onSubmit={submitStudents} className="bg-white border rounded-2xl p-5 space-y-3">
+        <h2 className="font-bold">Import Student Names</h2>
+        <p className="text-sm text-slate-600">Paste multiple names, one per line, or separated by commas. Duplicate names in the selected class are skipped. This does not create student passwords or PINs.</p>
+        <label className="block text-sm">Choose class
+          <select required value={selectedClassId} onChange={e => setSelectedClassId(e.target.value)} className="block border rounded-lg p-2 w-full mt-1">
+            <option value="">Select a class</option>
+            {classes.map(item => <option key={item.id} value={item.id}>{item.name} — {item.section}</option>)}
+          </select>
+        </label>
+        <label className="block text-sm">Student names
+          <textarea required rows={5} value={studentNames} onChange={e => setStudentNames(e.target.value)} className="block border rounded-lg p-2 w-full mt-1" placeholder={'Student One\\nStudent Two'} />
+        </label>
+        <button type="submit" disabled={saving || !selectedClassId} className="rounded-xl bg-indigo-700 text-white px-5 py-2 font-bold disabled:opacity-50">{saving ? 'Importing…' : 'Import Names'}</button>
+        {importResult && <p role="status" className="text-green-800 text-sm">{importResult}</p>}
       </form>
       <div className="bg-white border rounded-2xl p-5">
         <h2 className="font-bold mb-3">Class roster overview</h2>
