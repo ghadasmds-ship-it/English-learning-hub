@@ -51,17 +51,17 @@ export function App() {
 
   // Roles & Authentication State
   const [currentRole, setCurrentRole] = useState<UserRole>('student');
-  const [teachers, setTeachers] = useState<TeacherAccount[]>(storageService.getTeachers());
+  const [teachers, setTeachers] = useState<TeacherAccount[]>(() => demoMode ? storageService.getTeachers() : []);
   const [activeTeacherIndex, setActiveTeacherIndex] = useState(0);
   const activeTeacher = demoMode ? (teachers[activeTeacherIndex] || teachers[0]) : (staffSession?.role === 'teacher' ? staffSession.teacher : undefined);
 
   // Active Student State (Default Mona)
-  const defaultStudent = storageService.getStudentById('student_mona') || storageService.getTeacherStudents(activeTeacher?.id || '')[0];
+  const defaultStudent = demoMode ? (storageService.getStudentById('student_mona') || storageService.getTeacherStudents(activeTeacher?.id || '')[0]) : undefined;
   const [activeStudent, setActiveStudent] = useState<Student | undefined>(defaultStudent);
   const [studentLoggedIn, setStudentLoggedIn] = useState(demoMode);
 
   // Active Class State
-  const teacherClasses = activeTeacher ? storageService.getTeacherClasses(activeTeacher.id) : [];
+  const teacherClasses = demoMode && activeTeacher ? storageService.getTeacherClasses(activeTeacher.id) : [];
   const activeStudentClass = activeStudent ? teacherClasses.find(c => c.id === activeStudent.classId) || teacherClasses[0] : teacherClasses[0];
 
   // Student Progress State
@@ -92,13 +92,14 @@ export function App() {
 
   // Sync progress when active student changes
   useEffect(() => {
-    if (activeStudent) {
+    if (demoMode && activeStudent) {
       setStudentProgress(storageService.getStudentProgress(activeStudent.id));
     }
   }, [activeStudent]);
 
   // Handler for role changes
   const handleRoleChange = (role: UserRole) => {
+    if (!demoMode && role === 'parent') return;
     if (!demoMode && (role === 'teacher' || role === 'admin') && staffSession?.role !== role) {
       setShowStaffLogin(true);
       return;
