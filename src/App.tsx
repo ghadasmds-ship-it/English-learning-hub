@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { UserRole, TeacherAccount, Student, ClassRoom, StudentProgress } from './types';
 import { storageService } from './services/storageService';
 import { Navbar } from './components/common/Navbar';
+import { StaffLogin } from './components/common/StaffLogin';
+import { observeStaffSession, signOutStaff, type StaffSession } from './services/staffAuthService';
 import { StudentHome } from './components/student/StudentHome';
 import { StudentLogin } from './components/student/StudentLogin';
 import { UnitOverview } from './components/student/UnitOverview';
@@ -25,16 +27,37 @@ import { ParentReportView } from './components/parent/ParentReportView';
 import { Sparkles, Shield, UserCheck, CheckCircle2, RefreshCw } from 'lucide-react';
 
 export function App() {
+  const demoMode = import.meta.env.DEV && import.meta.env.VITE_ENABLE_DEMO === 'true';
+  const [staffSession, setStaffSession] = useState<StaffSession | null>(null);
+  const [showStaffLogin, setShowStaffLogin] = useState(false);
+  const [staffError, setStaffError] = useState('');
+
+  useEffect(() => {
+    if (demoMode) return;
+    try {
+      return observeStaffSession(session => {
+        setStaffSession(session);
+        if (session) {
+          setShowStaffLogin(false);
+          setCurrentRole(session.role);
+          setCurrentView(session.role === 'admin' ? 'admin-dashboard' : 'teacher-dashboard');
+        }
+      }, error => setStaffError(error.message));
+    } catch (error) {
+      setStaffError(error instanceof Error ? error.message : String(error));
+    }
+  }, [demoMode]);
+
   // Roles & Authentication State
   const [currentRole, setCurrentRole] = useState<UserRole>('student');
   const [teachers, setTeachers] = useState<TeacherAccount[]>(storageService.getTeachers());
   const [activeTeacherIndex, setActiveTeacherIndex] = useState(0);
-  const activeTeacher = teachers[activeTeacherIndex] || teachers[0];
+  const activeTeacher = demoMode ? (teachers[activeTeacherIndex] || teachers[0]) : (staffSession?.role === 'teacher' ? staffSession.teacher : undefined);
 
   // Active Student State (Default Mona)
   const defaultStudent = storageService.getStudentById('student_mona') || storageService.getTeacherStudents(activeTeacher?.id || '')[0];
   const [activeStudent, setActiveStudent] = useState<Student | undefined>(defaultStudent);
-  const [studentLoggedIn, setStudentLoggedIn] = useState(true);
+  const [studentLoggedIn, setStudentLoggedIn] = useState(demoMode);
 
   // Active Class State
   const teacherClasses = activeTeacher ? storageService.getTeacherClasses(activeTeacher.id) : [];
@@ -75,6 +98,10 @@ export function App() {
 
   // Handler for role changes
   const handleRoleChange = (role: UserRole) => {
+    if (!demoMode && (role === 'teacher' || role === 'admin') && staffSession?.role !== role) {
+      setShowStaffLogin(true);
+      return;
+    }
     setCurrentRole(role);
     if (role === 'teacher') {
       setCurrentView('teacher-dashboard');
@@ -93,6 +120,13 @@ export function App() {
   };
 
   const handleLogout = () => {
+    if (!demoMode && (currentRole === 'teacher' || currentRole === 'admin')) {
+      void signOutStaff().catch(error => setStaffError(String(error)));
+      setStaffSession(null);
+      setCurrentRole('student');
+      setStudentLoggedIn(false);
+      return;
+    }
     if (currentRole === 'student') {
       setStudentLoggedIn(false);
     } else {
@@ -114,8 +148,10 @@ export function App() {
         onLogout={handleLogout}
       />
 
+      {!demoMode && staffError && <div role="alert" className="bg-amber-50 p-3 text-amber-900 text-sm">Staff authentication: {staffError}</div>}
+      {demoMode && <div className="bg-amber-100 text-amber-950 text-center p-2 text-xs font-semibold">LOCAL DEMO ONLY — Sample data and accounts are not secure or production-ready.</div>}
       {/* Tenant Isolation Switcher Banner for Testing Multi-Tenancy */}
-      {currentRole === 'teacher' && teachers.length > 1 && (
+      {demoMode && currentRole === 'teacher' && teachers.length > 1 && (
         <div className="bg-indigo-900 text-indigo-100 px-4 py-2 text-xs flex flex-wrap items-center justify-between gap-2 border-b border-indigo-800">
           <div className="flex items-center gap-2">
             <Shield className="w-4 h-4 text-sky-400 shrink-0" />
@@ -145,8 +181,20 @@ export function App() {
 
       {/* Main Experience Body */}
       <main className="flex-1">
+        {showStaffLogin && !demoMode && <StaffLogin onSuccess={session => {
+          setStaffSession(session);
+          setShowStaffLogin(false);
+          setCurrentRole(session.role);
+          setCurrentView(session.role === 'admin' ? 'admin-dashboard' : 'teacher-dashboard');
+        }} onCancel={() => setShowStaffLogin(false)} />}
+        {!demoMode && staffSession && (currentRole === 'teacher' || currentRole === 'admin') && !showStaffLogin && (
+          <section className="max-w-2xl mx-auto my-12 p-6 bg-white rounded-2xl border" role="status">
+            <h2 className="text-xl font-bold">Account verified</h2>
+            <p className="mt-2 text-slate-600">Your identity is authenticated. The legacy browser-local teacher dashboards are disabled until their data operations are migrated to Firestore. This protects other teachers' records.</p>
+          </section>
+        )}
         {/* ================= PARENT REPORT EXPERIENCE ================= */}
-        {currentRole === 'parent' && parentReportToken && (
+        {demoMode && currentRole === 'parent' && parentReportToken && (
           <ParentReportView
             token={parentReportToken}
             onExit={() => {
@@ -157,12 +205,12 @@ export function App() {
         )}
 
         {/* ================= PLATFORM ADMIN / OWNER ================= */}
-        {currentRole === 'admin' && (
+        {demoMode && currentRole === 'admin' && (
           <AdminDashboard />
         )}
 
         {/* ================= TEACHER EXPERIENCE ================= */}
-        {currentRole === 'teacher' && (
+        {demoMode && currentRole === 'teacher' && (
           <>
             {currentView === 'teacher-dashboard' && (
               <TeacherDashboard
@@ -215,7 +263,7 @@ export function App() {
         )}
 
         {/* ================= STUDENT EXPERIENCE ================= */}
-        {currentRole === 'student' && (
+        {!showStaffLogin && currentRole === 'student' && (
           <>
             {!studentLoggedIn || !activeStudent ? (
               <StudentLogin
@@ -331,7 +379,7 @@ export function App() {
       </main>
 
       {/* Global Modals */}
-      {activeTeacher && (
+      {demoMode && activeTeacher && (
         <>
           <AddClassModal
             teacher={activeTeacher}
@@ -362,13 +410,13 @@ export function App() {
           <div>
             English Learning Hub © 2026. Welcome Unit Pilot Edition.
           </div>
-          <div className="flex items-center gap-4 text-[11px] text-slate-400">
+          {demoMode && <div className="flex items-center gap-4 text-[11px] text-slate-400">
             <span>Multi-Tenant Architecture</span>
             <span aria-hidden="true">·</span>
             <span>Firestore Rules Configured</span>
             <span aria-hidden="true">·</span>
             <span>Zero-PII Isolation</span>
-          </div>
+          </div>}
         </div>
       </footer>
     </div>
