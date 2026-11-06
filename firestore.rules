@@ -64,21 +64,26 @@ service cloud.firestore {
         request.auth.uid == studentId ||
         isPlatformAdmin()
       );
-      allow create: if isAuthenticated() && isTeacherActive(request.resource.data.teacherId);
-      allow update, delete: if isAuthenticated() && isTeacherActive(resource.data.teacherId);
+      allow create: if isTeacherActive(request.resource.data.teacherId) &&
+        exists(/databases/$(database)/documents/classes/$(request.resource.data.classId)) &&
+        get(/databases/$(database)/documents/classes/$(request.resource.data.classId)).data.teacherId == request.auth.uid;
+      allow update: if isTeacherActive(resource.data.teacherId) &&
+        request.resource.data.teacherId == resource.data.teacherId &&
+        request.resource.data.classId == resource.data.classId;
+      allow delete: if isTeacherActive(resource.data.teacherId);
     }
 
-    // Learning Attempts: Logged by active student or teacher review
+    // Learning Attempts: teacher writes only until student auth and server-side scoring are implemented
     match /attempts/{attemptId} {
       allow read: if isAuthenticated() && (
         resource.data.teacherId == request.auth.uid ||
         resource.data.studentId == request.auth.uid ||
         isPlatformAdmin()
       );
-      allow create: if isAuthenticated() && (
-        request.auth.uid == request.resource.data.studentId ||
-        isTeacher(request.resource.data.teacherId)
-      );
+      allow create: if isTeacherActive(request.resource.data.teacherId) &&
+        request.resource.data.studentId is string &&
+        exists(/databases/$(database)/documents/students/$(request.resource.data.studentId)) &&
+        get(/databases/$(database)/documents/students/$(request.resource.data.studentId)).data.teacherId == request.auth.uid;
       allow update: if false; // Attempts are immutable audit records
       allow delete: if false; // Immutable audit trail
     }
@@ -90,8 +95,14 @@ service cloud.firestore {
         request.auth.uid == studentId ||
         isPlatformAdmin()
       );
-      allow create: if isAuthenticated() && (isTeacherActive(request.resource.data.teacherId) || (request.auth.uid == studentId && request.resource.data.studentId == studentId));
-      allow update: if isAuthenticated() && request.resource.data.teacherId == resource.data.teacherId && (isTeacherActive(resource.data.teacherId) || request.auth.uid == studentId);
+      allow create: if isTeacherActive(request.resource.data.teacherId) &&
+        request.resource.data.studentId == studentId &&
+        exists(/databases/$(database)/documents/students/$(studentId)) &&
+        get(/databases/$(database)/documents/students/$(studentId)).data.teacherId == request.auth.uid;
+      allow update: if isTeacherActive(resource.data.teacherId) &&
+        request.resource.data.teacherId == resource.data.teacherId &&
+        request.resource.data.studentId == resource.data.studentId &&
+        request.resource.data.classId == resource.data.classId;
       allow delete: if isPlatformAdmin();
     }
 
