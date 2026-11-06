@@ -16,6 +16,7 @@ import { FinalUnitQuiz } from './components/student/quiz/FinalUnitQuiz';
 import { MyAchievements } from './components/student/achievements/MyAchievements';
 import { ClassLeaderboard } from './components/student/leaderboard/ClassLeaderboard';
 import { TeacherDashboard } from './components/teacher/TeacherDashboard';
+import { CloudTeacherDashboard } from './components/teacher/CloudTeacherDashboard';
 import { ClassesView } from './components/teacher/ClassesView';
 import { StudentsView } from './components/teacher/StudentsView';
 import { TeacherReportsView } from './components/teacher/TeacherReportsView';
@@ -187,10 +188,13 @@ export function App() {
           setCurrentRole(session.role);
           setCurrentView(session.role === 'admin' ? 'admin-dashboard' : 'teacher-dashboard');
         }} onCancel={() => setShowStaffLogin(false)} />}
-        {!demoMode && staffSession && (currentRole === 'teacher' || currentRole === 'admin') && !showStaffLogin && (
-          <section className="max-w-2xl mx-auto my-12 p-6 bg-white rounded-2xl border" role="status">
-            <h2 className="text-xl font-bold">Account verified</h2>
-            <p className="mt-2 text-slate-600">Your identity is authenticated. The legacy browser-local teacher dashboards are disabled until their data operations are migrated to Firestore. This protects other teachers' records.</p>
+        {!demoMode && staffSession?.role === 'teacher' && currentRole === 'teacher' && !showStaffLogin && (
+          <CloudTeacherDashboard teacherId={staffSession.user.uid} />
+        )}
+        {!demoMode && staffSession?.role === 'admin' && currentRole === 'admin' && !showStaffLogin && (
+          <section className="max-w-2xl mx-auto my-12 p-6 bg-white rounded-2xl border">
+            <h2 className="text-xl font-bold">Owner account verified</h2>
+            <p className="mt-2 text-slate-600">Licensing management requires the trusted backend before activation.</p>
           </section>
         )}
         {/* ================= PARENT REPORT EXPERIENCE ================= */}
