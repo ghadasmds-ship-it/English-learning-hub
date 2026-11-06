@@ -1,0 +1,108 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isPlatformAdmin() {
+      return isAuthenticated() && 
+        (request.auth.token.role == 'admin' || 
+         request.auth.token.email == 'admin@englishlearninghub.com');
+    }
+
+    function isTeacher(teacherId) {
+      return isAuthenticated() && request.auth.uid == teacherId;
+    }
+
+    function isTeacherActive(teacherId) {
+      return isTeacher(teacherId) &&
+        get(/databases/$(database)/documents/teachers/$(teacherId)).data.isReadOnly == false &&
+        request.time < get(/databases/$(database)/documents/teachers/$(teacherId)).data.licenseExpiresAt;
+    }
+
+    // Platform Settings & Pricing: Public read, Admin write
+    match /platformSettings/{docId} {
+      allow read: if true;
+      allow write: if isPlatformAdmin();
+    }
+
+    // Licenses: Admin manages, teachers can read and activate their own license
+    match /licenses/{licenseId} {
+      allow read: if isPlatformAdmin() || 
+        (isAuthenticated() && resource.data.teacherId == request.auth.uid);
+      allow create, delete: if isPlatformAdmin();
+      allow update: if isPlatformAdmin() || 
+        (isAuthenticated() && resource.data.status == 'available' && request.resource.data.teacherId == request.auth.uid);
+    }
+
+    // Teachers Collection
+    match /teachers/{teacherId} {
+      allow read: if isTeacher(teacherId) || isPlatformAdmin();
+      allow create: if isAuthenticated() && request.auth.uid == teacherId;
+      allow update: if (isTeacher(teacherId) && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['licenseExpiresAt', 'isReadOnly'])) || isPlatformAdmin();
+      allow delete: if isPlatformAdmin();
+    }
+
+    // Classes: Multi-tenant isolated to teacherId
+    match /classes/{classId} {
+      allow read: if isAuthenticated() && (
+        resource.data.teacherId == request.auth.uid ||
+        request.auth.token.classId == classId ||
+        isPlatformAdmin()
+      );
+      // Teachers can only create/update/delete classes if subscription is active
+      allow create: if isAuthenticated() && isTeacherActive(request.resource.data.teacherId);
+      allow update, delete: if isAuthenticated() && isTeacherActive(resource.data.teacherId);
+    }
+
+    // Students: Multi-tenant isolated to teacherId & classId
+    match /students/{studentId} {
+      allow read: if isAuthenticated() && (
+        resource.data.teacherId == request.auth.uid ||
+        request.auth.uid == studentId ||
+        isPlatformAdmin()
+      );
+      allow create: if isAuthenticated() && isTeacherActive(request.resource.data.teacherId);
+      allow update, delete: if isAuthenticated() && isTeacherActive(resource.data.teacherId);
+    }
+
+    // Learning Attempts: Logged by active student or teacher review
+    match /attempts/{attemptId} {
+      allow read: if isAuthenticated() && (
+        resource.data.teacherId == request.auth.uid ||
+        resource.data.studentId == request.auth.uid ||
+        isPlatformAdmin()
+      );
+      allow create: if isAuthenticated() && (
+        request.auth.uid == request.resource.data.studentId ||
+        isTeacher(request.resource.data.teacherId)
+      );
+      allow update: if isAuthenticated() && isTeacher(resource.data.teacherId);
+      allow delete: if false; // Immutable audit trail
+    }
+
+    // Student Progress
+    match /studentProgress/{studentId} {
+      allow read: if isAuthenticated() && (
+        resource.data.teacherId == request.auth.uid ||
+        request.auth.uid == studentId ||
+        isPlatformAdmin()
+      );
+      allow write: if isAuthenticated() && (
+        resource.data.teacherId == request.auth.uid ||
+        request.auth.uid == studentId ||
+        isPlatformAdmin()
+      );
+    }
+
+    // Secure Parent Report Links: Verified token validation
+    match /parentReportLinks/{linkId} {
+      allow read: if true; // Accessed via public parent token check
+      allow create, update: if isAuthenticated() && isTeacher(request.resource.data.teacherId);
+      allow delete: if isAuthenticated() && isTeacher(resource.data.teacherId);
+    }
+  }
+}

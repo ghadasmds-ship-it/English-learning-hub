@@ -1,0 +1,6 @@
+{
+  "name": "English Learning Hub",
+  "description": "Commercial multi-teacher English learning platform for young learners featuring interactive lessons, speech practice, progress tracking, and teacher dashboards.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

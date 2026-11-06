@@ -1,0 +1,814 @@
+BUILD ENGLISH LEARNING HUB – WELCOME UNIT
+Complete Product Build Instructions for Google AI Studio
+You are building a new educational web application called English Learning Hub from scratch.
+
+This is a commercial, multi-teacher English learning platform for young learners. The first release must implement the complete Welcome unit as a fully functional pilot. Do not build the full content of the other units yet.
+
+Do not create only a visual prototype. Build functional screens, navigation, learning activities, progress tracking, assessment logic, and the required backend foundations.
+
+1. PRODUCT VISION AND TECHNICAL FOUNDATION
+Build a polished, child-friendly English learning platform with two distinct experiences:
+
+Teacher experience: Professional dashboard for managing classes, students, learning progress, reports, and subscriptions.
+Student experience: Colorful, simple, engaging learning environment focused on vocabulary mastery.
+Technology
+Use:
+
+React for the frontend.
+TypeScript.
+Firebase Authentication.
+Cloud Firestore.
+Firebase Storage.
+Firebase Cloud Functions where required for trusted server-side operations.
+Responsive design for laptops, tablets, and mobile phones.
+Use a clean, reusable, scalable architecture.
+
+If Firebase configuration is not yet available, create the Firebase integration structure and clearly identify the configuration required. Do not pretend that authentication, database persistence, or security are working until they are actually connected and tested.
+
+Do not store sensitive credentials or license secrets in frontend code.
+
+2. COMMERCIAL PLATFORM ARCHITECTURE
+This platform will be sold to individual teachers through annual subscriptions.
+
+The architecture MUST support multiple independent teachers (multi-tenancy).
+
+User roles
+Platform Owner / Admin
+Teacher
+Student
+Parent / Guardian (secure report access only)
+Teacher registration and licensing
+Teachers register using email and password.
+Each teacher activates their account using a unique activation code received after purchasing a subscription.
+Each activation code is associated with one teacher account.
+A license is valid for 12 months.
+A license is tied to the teacher account, not a specific device.
+Teachers can log in from different supported devices.
+The system must support license renewal, expiry, revocation, and status monitoring.
+The platform owner must be able to issue and manage activation codes from a private admin dashboard.
+Expired subscription behavior
+When a teacher’s annual subscription expires:
+
+Switch the teacher account to read-only mode.
+Preserve all classes, students, results, achievements, and reports.
+Allow the teacher to view and download existing records.
+Prevent creating new classes and students.
+Prevent access to new learning activities and assessments.
+Restore full functionality after renewal.
+Never automatically delete teacher data because a subscription expired.
+Subscription duration and pricing must be configurable from the owner dashboard.
+
+Tenant isolation – CRITICAL
+Every teacher must have a completely separate workspace.
+
+A teacher can access only:
+
+Their own classes.
+Their own students.
+Their own learning results.
+Their own reports.
+Their own leaderboards.
+Their own subscription information.
+Enforce this at the database and backend security level, not only by hiding frontend elements.
+
+A student must only access their own account and their assigned class information.
+
+A parent report link must only expose the specific student’s authorized report.
+
+Never rely on frontend filtering as a security boundary.
+
+Create and test Firestore Security Rules and trusted server-side authorization checks.
+
+3. TEACHER EXPERIENCE
+Create a professional, elegant, easy-to-use teacher dashboard.
+
+Use a modern visual style with excellent spacing, clear typography, attractive cards, and intuitive navigation.
+
+Main navigation
+My Teaching Dashboard
+My Classes
+Add New Class
+My Students
+Reports & Analytics
+Subscription
+Account Settings
+My Teaching Dashboard
+Show a summary of the teacher’s overall learning environment:
+
+Total classes.
+Total students.
+Overall average mastery.
+Strongest learning skills.
+Skills needing improvement.
+Students who need additional support.
+Recent learning activity.
+Progress across units and classes.
+All statistics must come from actual saved records. Do not display fictional statistics as real results.
+
+Class creation
+Allow the teacher to create unlimited classes, subject to reasonable fair-use infrastructure limits.
+
+Class information:
+
+Class name.
+Stage / Level.
+Grade.
+Section / Division.
+Academic year.
+Each class must have its own separate student roster, results, reports, and leaderboard.
+
+Adding students
+Support three methods:
+
+Paste multiple student names into one text box. Accept line-separated names and names copied from Excel.
+Upload Excel files.
+Upload PDF class lists.
+For file imports:
+
+Extract student names automatically.
+Support OCR for scanned PDFs when technically available.
+Display a preview before saving.
+Allow editing and deleting names.
+Detect possible duplicates.
+Add students only to the selected class.
+Generate unique student usernames or student numbers.
+Generate private student PINs.
+Allow the teacher to download a student login sheet.
+Do not integrate with Madrasati.
+
+Student login
+Students do not need email addresses.
+
+Use:
+
+Class code.
+Student username or student number.
+Private PIN.
+Students must not be able to access other classes or other students’ private information.
+
+4. STUDENT EXPERIENCE – DESIGN REQUIREMENTS
+The student interface is a priority.
+
+It must feel like a delightful, modern learning world designed for young learners.
+
+Visual direction
+Create a polished, colorful, friendly interface.
+
+Use:
+
+Consistent cartoon illustrations.
+Clear and attractive unit cards.
+Soft, cheerful colors.
+Rounded cards and buttons.
+Friendly icons.
+Simple navigation.
+Clear progress indicators.
+Small animations and rewarding feedback.
+Large touch-friendly buttons.
+Avoid:
+
+Overcrowded screens.
+Excessive text.
+Complicated menus.
+Abstract or confusing images.
+Unnecessary phonetic symbols.
+Babyish visuals that make the interface look low-quality.
+Illustrations
+Use a consistent cartoon illustration style throughout the platform.
+
+Every vocabulary illustration must clearly communicate the meaning of its target word.
+
+For abstract words, use a meaningful situation rather than an unrelated object.
+
+Examples:
+
+Ago: a visual timeline showing the past.
+How long: a clear duration question.
+Early and Late: a clock and arrival situation.
+Prepare: a child getting a school bag ready.
+Have no fear: a child confidently facing something that once frightened them.
+Do not use a dice image to represent “board games” or other images that only loosely relate to a word.
+
+Do not use realistic stock photos for vocabulary cards.
+
+Use clear cartoon illustrations with simple backgrounds.
+
+5. UNIT STRUCTURE
+Create the unit selection screen.
+
+All units must be open from the beginning. Do not lock a unit until another unit is completed.
+
+The first semester units are:
+
+Welcome
+Personal Interest
+House Designs
+Job Paths
+Glorious Food
+Only Welcome must contain full learning content in this build.
+
+The other units may appear as attractive navigation cards marked as upcoming content, without fabricated lessons or activities.
+
+6. WELCOME UNIT – COMPLETE CONTENT
+The Welcome unit has three main sections:
+
+Months of the Year
+Numbers
+My Vocabulary
+Each section must have its own learning journey, practice activities, challenges, and progress tracking.
+
+SECTION A: MONTHS OF THE YEAR
+Teach all 12 months:
+
+January, February, March, April, May, June, July, August, September, October, November, December.
+
+Activity 1 – Learn the Months
+Display all 12 months with:
+
+Correct English spelling.
+Clear audio pronunciation.
+Attractive cartoon illustrations.
+Seasonal illustrations that help students remember the months.
+Use the common Northern Hemisphere seasonal calendar as an approximate educational reference:
+
+Winter: December, January, February.
+Spring: March, April, May.
+Summer: June, July, August.
+Autumn: September, October, November.
+Do not imply that these seasons describe the exact weather in Saudi Arabia.
+
+Activity 2 – Month Quiz
+Create varied, randomized questions:
+
+Look at a seasonal illustration and choose the correct month.
+Listen to a month and select its written name.
+Match a month to its seasonal image.
+Answer questions such as “What comes after March?”
+Answer questions such as “What comes before October?”
+Avoid repeating the same question format continuously.
+
+Activity 3 – Put the Months in Order
+This is a mandatory mastery activity.
+
+Students must arrange all 12 months in the correct calendar order, from January to December.
+
+Use an interactive drag-and-drop or tap-to-arrange activity.
+
+Provide feedback and allow retries.
+
+Critical rule: A student cannot be marked as having mastered Months of the Year unless she can correctly arrange all 12 months in their correct order without assistance.
+
+Activity 4 – Say the Month
+Allow students to use their microphone to say month names.
+
+Record the student’s speech.
+Evaluate pronunciation using an appropriate speech assessment capability.
+Provide clear feedback.
+Allow multiple attempts.
+Track pronunciation progress separately.
+Do not treat speech-to-text transcription alone as a reliable pronunciation score.
+
+If the speech assessment capability is unavailable or uncertain, mark the result as requiring teacher review instead of falsely claiming accurate assessment.
+
+Activity 5 – Spell the Month
+Create an interactive spelling game.
+
+Display a month image or audio prompt.
+Show scrambled letters.
+Allow the student to arrange letters into the correct spelling.
+Give feedback.
+Track spelling accuracy.
+A future optional challenge may include spelling a month from audio without displaying its written form.
+
+Months mastery criteria
+Track these separately:
+
+Month recognition.
+Month sequence.
+Pronunciation.
+Spelling.
+Full mastery requires successful completion of the 12-month ordering activity and the defined recognition, pronunciation, and spelling requirements.
+
+SECTION B: NUMBERS – 1 TO 1,000
+The educational objective is NOT memorizing every number individually.
+
+The objective is to enable students to read and write numbers up to 1,000, especially three-digit numbers.
+
+Teach the composition and reading of numbers:
+
+Hundreds.
+Tens.
+Ones.
+Numbers containing zero.
+One thousand.
+Use the American English number-writing style WITHOUT “and”.
+
+Examples:
+
+125 → One hundred twenty-five
+308 → Three hundred eight
+470 → Four hundred seventy
+405 → Four hundred five
+670 → Six hundred seventy
+902 → Nine hundred two
+1,000 → One thousand
+Be consistent throughout all lessons, activities, feedback, and automated correction.
+
+Activity 1 – Learn the Numbers
+Teach number composition visually.
+
+Show how hundreds, tens, and ones form a number.
+
+Examples:
+
+125 = 100 + 20 + 5
+
+340 = 300 + 40
+
+708 = 700 + 8
+
+Use clear visual blocks, number cards, and simple explanations.
+
+Activity 2 – Read the Number
+Show a written number and ask students to:
+
+Select the correct spoken form.
+Listen to a number and choose its numerical form.
+Read the number aloud where supported.
+Use different numbers rather than repeatedly practicing the same examples.
+
+Activity 3 – Write in Words
+Show a number such as 256.
+
+Ask the student to write:
+
+Two hundred fifty-six.
+
+Check spelling, word order, hyphenation where appropriate, and number composition.
+
+Activity 4 – Number Dictation
+Play a clear audio prompt.
+
+Students must write the number using digits.
+
+Example:
+
+Audio: “Four hundred thirty-two.”
+
+Answer: 432.
+
+Include a second dictation challenge in which the student hears the number and writes it in English words.
+
+Activity 5 – Number Challenge
+Create randomized mixed questions:
+
+Read a number.
+Write a number in words.
+Write a spoken number using digits.
+Identify missing numbers in a sequence.
+Distinguish tens and hundreds.
+Identify numbers containing zero.
+Recognize the difference between similar number forms.
+Numbers mastery
+Assess separately:
+
+Number recognition.
+Reading.
+Writing in words.
+Listening and number dictation.
+Use varied numbers up to 1,000.
+
+Do not mark a student as proficient simply because she memorized a small set of example numbers.
+
+SECTION C: MY VOCABULARY
+Teach the following 18 target words and expressions.
+
+Divide them into four independent groups.
+
+Each group must have its own attractive card and its own learning activities.
+
+Group 1 – Time & Calendar
+Ago
+Calendar
+Date
+How long
+Early
+Late
+Time
+Year
+Group 2 – Events & Actions
+Festival
+Have no fear
+Prepare
+Group 3 – Things & Nature
+Comic book
+Lion
+Mountain
+Rainbow
+Snail
+Group 4 – Description
+Tall
+Tired
+Vocabulary card design
+Each word card must contain:
+
+Clear cartoon illustration.
+English word or expression.
+Simple Arabic meaning.
+Clear audio pronunciation.
+One short, age-appropriate English example sentence.
+A replay audio button.
+The image must communicate the exact meaning of the word.
+
+Vocabulary activities
+Each group must include:
+
+1. Learn & Listen
+
+Introduce words with pictures, meanings, and pronunciation.
+
+2. Match
+
+Match words to their correct illustrations or meanings.
+
+3. Listen & Choose
+
+Listen to a word and select the correct answer.
+
+4. Spell It
+
+Arrange scrambled letters into the correct word.
+
+For multiword expressions, use an appropriate word-order activity.
+
+5. Complete the Sentence
+
+Choose the correct vocabulary word to complete a short sentence.
+
+6. Word Challenge
+
+Create a randomized mixed assessment using images, meanings, listening, spelling, and simple contexts.
+
+7. Review
+
+Automatically identify words the student has not mastered and bring them back into practice.
+
+Do not force students to repeat words they have already mastered unnecessarily.
+
+Vocabulary mastery
+Track mastery for each word separately.
+
+A word should only be marked as mastered after successful performance in multiple relevant activities, not after the student simply opens its card or listens to its audio.
+
+7. STORY TIME – MONA’S FUN FESTIVAL
+Create an illustrated children’s picture-book experience titled:
+
+Mona’s Fun Festival
+
+This is a short, easy story for young English learners.
+
+Use a consistent cartoon illustration style and divide the story into five illustrated pages.
+
+Do not show the entire story on one screen.
+
+Story text
+Page 1
+
+Today is the school festival!
+
+Mona looks at the calendar. The date is May 10. She is happy.
+
+Page 2
+
+She gets up early. She is not late.
+
+She helps her mom prepare her bag. She puts a comic book inside.
+
+Page 3
+
+At the festival, Mona sees a tall mountain, a beautiful rainbow, and a little snail.
+
+Page 4
+
+Then she sees a big lion puppet!
+
+“Have no fear, Mona!” says her friend.
+
+Mona smiles. “How long is the show?”
+
+“One hour!” says her friend.
+
+Page 5
+
+A year ago, Mona was afraid of lions. Now she is brave!
+
+It is time to go home. Mona is tired but happy.
+
+Story functionality
+Each page must include:
+
+Large, relevant cartoon illustration.
+Short readable text.
+Next and Previous buttons.
+Audio playback for the complete page.
+Replay audio.
+Tap any target vocabulary word to hear its pronunciation.
+Highlight target words in the story.
+Clear page progress indicator.
+Reading practice
+Allow students to record themselves reading each page.
+
+Where technically supported:
+
+Evaluate word accuracy.
+Assess pronunciation.
+Estimate pauses and reading fluency.
+Provide constructive feedback.
+Allow retries.
+Do not present uncertain AI speech assessments as definitive results.
+
+If pronunciation or fluency cannot be reliably evaluated, flag the reading for teacher review.
+
+Story mastery
+Award the special gold Story Master Trophy only after the student meets the defined story-reading mastery criteria.
+
+Do not award this trophy for simply opening or listening to the story.
+
+8. STUDENT PROGRESS TRACKING
+Track learning progress at several levels:
+
+Overall student progress.
+Unit progress.
+Section progress.
+Individual word mastery.
+Skill-level performance.
+Story-reading performance.
+The main learning skills include:
+
+Vocabulary recognition.
+Meaning.
+Listening.
+Pronunciation.
+Spelling and writing.
+Reading and fluency.
+Progress must be based on actual recorded learning performance.
+
+Save progress persistently so that students can leave and return without losing completed work.
+
+Avoid awarding points for simply clicking buttons, spending time on a page, or opening activities.
+
+9. REWARDS AND GAMIFICATION
+Create a meaningful achievement system.
+
+The platform must award:
+
+Stars.
+Badges.
+Levels.
+Special trophies.
+All rewards must be connected to measurable learning achievements.
+
+Special trophies
+Examples:
+
+Story Master – gold trophy for mastering a unit story.
+Vocabulary Champion – mastering all target vocabulary.
+Perfect Speller – meeting spelling mastery criteria.
+Speaking Champion – meeting pronunciation mastery criteria.
+Unit Master – mastering the required skills in a unit.
+The gold Story Master Trophy must be visually distinguished as a prestigious achievement.
+
+My Achievements
+Create a dedicated student page titled:
+
+My Achievements
+
+It must display:
+
+Total stars.
+Earned badges.
+Earned trophies.
+Learning progress.
+Skill progress.
+Unit achievements.
+My Achievement Gallery
+Display both earned and unearned achievements.
+
+Earned achievements:
+
+Full color.
+Attractive illustrations.
+Achievement date.
+Clear explanation of why the student earned them.
+Unearned achievements:
+
+Visually faded or locked.
+Show the requirement needed to earn them.
+Show progress toward the next achievement when possible.
+Students must not be able to manually assign themselves rewards.
+
+Rewards must be generated by trusted achievement logic based on actual learning records.
+
+Download My Achievements – PDF
+Provide a button allowing the student to download a polished PDF portfolio.
+
+Include:
+
+Student name.
+Class and teacher.
+Total stars, badges, and trophies.
+Earned achievements and dates.
+Unit progress.
+Skill progress.
+Strengths and areas to improve.
+Final completion certificate within the portfolio when all required platform objectives are achieved.
+Do not create separate certificates for every unit.
+
+The PDF must reflect real saved student records.
+
+10. CLASS LEADERBOARDS
+Create two competition views within each class.
+
+Unit Leaderboard
+Show the Top 10 students in each unit.
+
+Class Leaderboard
+Show the overall Top 10 students in the class across units.
+
+Requirements:
+
+Dynamic updates.
+Gold, silver, and bronze distinctions for the top three.
+Clear student ranking.
+Fair scoring based on genuine mastery and learning progress.
+Include skill achievement, spelling, pronunciation, story reading, and improvement.
+Do not reward clicks or time spent.
+Students outside the Top 10 must still see their own progress and achievements.
+Never combine students from different classes or teachers.
+11. TEACHER REPORTS AND PARENT REPORTS
+Create the data structure and interfaces required for detailed reporting.
+
+Student report
+Include:
+
+Overall mastery.
+Mastered vocabulary.
+Words needing improvement.
+Reading performance.
+Listening performance.
+Spelling and writing.
+Pronunciation.
+Story-reading progress.
+Strengths.
+Areas needing support.
+Suggested home practice.
+Teacher analytics
+Include:
+
+Class average mastery.
+Strongest and weakest skills.
+Commonly missed vocabulary.
+Students requiring support.
+Progress comparisons across units.
+Pre-assessment and post-assessment results when available.
+Parent access
+Allow teachers to generate a unique secure link for an individual student’s report.
+
+The parent must not need a separate account.
+
+Requirements:
+
+Link only exposes the authorized student’s report.
+Teacher can revoke the link.
+Link can have an expiry.
+Never expose other students’ information.
+Protect report access through secure server-side authorization.
+12. DATA MODEL AND SECURITY
+Design the Firestore data model for multi-tenant use.
+
+Suggested entities:
+
+users
+teachers
+licenses
+classes
+students
+units
+vocabulary
+learningActivities
+attempts
+studentProgress
+achievements
+leaderboardSnapshots
+studentReports
+parentReportLinks
+platformSettings
+Every teacher-owned record must have a teacherId.
+
+Student records must also have the correct classId.
+
+Use trusted server-side logic for:
+
+License activation.
+Subscription status.
+Achievement awarding.
+Leaderboard scoring.
+Secure parent report access.
+Any sensitive authorization checks.
+Implement least-privilege access rules.
+
+Do not expose student PINs or license secrets unnecessarily.
+
+Do not put private credentials in public Firestore documents.
+
+13. USER EXPERIENCE AND QUALITY REQUIREMENTS
+The application must be:
+
+Fully responsive.
+Easy to navigate.
+Visually polished.
+Consistent across all screens.
+Fast and accessible.
+Suitable for young learners.
+Functional on mobile and desktop.
+Provide:
+
+Loading states.
+Empty states.
+Error messages.
+Success feedback.
+Clear retry options.
+Confirmation before destructive teacher actions.
+Use real functional buttons and controls.
+
+Do not create decorative controls that do nothing.
+
+Do not use placeholder data as actual student results.
+
+Clearly label any sample or demo data.
+
+14. IMPORTANT DEVELOPMENT RULES
+Build the Welcome unit as the first complete pilot.
+Do not build the full educational content of the other units yet.
+Keep the architecture reusable for future units.
+Do not remove or simplify any of the requirements above.
+Do not replace real learning activities with static mockups.
+Do not claim Firebase functionality is complete before it is connected and tested.
+Do not use Madrasati integration.
+Do not hardcode teacher licenses or student credentials.
+Do not use frontend-only tenant isolation.
+Do not award achievements based on activity clicks.
+Use the American number-writing format without “and” consistently.
+Keep all units open from the beginning.
+Keep student, teacher, and admin experiences visually distinct.
+Use cartoon illustrations with accurate meanings.
+Keep student instructions simple and age-appropriate.
+15. ACCEPTANCE TESTS
+Before declaring the build complete, verify the following:
+
+Welcome learning tests
+All 12 months appear correctly.
+Month ordering works.
+Month audio and spelling activities work.
+The student cannot receive full month mastery without correctly ordering all 12 months.
+Number activities include varied three-digit numbers up to 1,000.
+Numbers containing zero are included.
+American number-writing format is used consistently.
+All 18 vocabulary words are present.
+Vocabulary is separated into the four approved groups.
+Vocabulary illustrations match their meanings.
+The story contains all five pages.
+Story audio and word-level pronunciation controls work where supported.
+Story reading recording works where supported.
+Progress and rewards tests
+Student progress persists after logout and login.
+Mastery is calculated from actual attempts.
+Weak vocabulary is included in review.
+Stars, badges, and trophies are awarded only when criteria are met.
+Locked achievements show their requirements.
+My Achievements PDF reflects real saved records.
+Leaderboards are restricted to the correct class.
+Security tests
+Teacher A cannot access Teacher B’s classes or students.
+Student A cannot access Student B’s private records.
+Students cannot access other classes.
+Parent links expose only the authorized report.
+Expired subscriptions switch to read-only mode.
+Renewed subscriptions restore permitted functionality.
+No sensitive secrets are exposed in frontend code.
+FINAL INSTRUCTION
+Start by designing and implementing the application structure, then build the complete Welcome unit.
+
+Prioritize a beautiful, high-quality student interface and genuinely useful learning interactions.
+
+Do not stop after generating the initial homepage.
+
+Complete the functional Welcome learning journey, connect it to persistent data where Firebase is configured, and provide a clear implementation summary showing:
+
+What has been built.
+What is functional.
+What requires Firebase configuration.
+What requires external services or API keys.
+Which tests have passed.
+Any remaining limitations.
+The result should be a strong, professional first version of English Learning Hub, ready for structured testing by a teacher and a student.
