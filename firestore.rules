@@ -33,8 +33,7 @@ service cloud.firestore {
       allow read: if isPlatformAdmin() || 
         (isAuthenticated() && resource.data.teacherId == request.auth.uid);
       allow create, delete: if isPlatformAdmin();
-      allow update: if isPlatformAdmin() || 
-        (isAuthenticated() && resource.data.status == 'available' && request.resource.data.teacherId == request.auth.uid);
+      allow update: if isPlatformAdmin(); // Activation must be performed by trusted backend
     }
 
     // Teachers Collection
