@@ -22,6 +22,7 @@ export async function resolveStaffSession(user: User): Promise<StaffSession | nu
   if (!teacherDoc.exists()) return null;
   const data = teacherDoc.data() as TeacherAccount;
   if (data.id && data.id !== user.uid) return null;
+  if (!data.email || data.email.toLowerCase() !== (user.email || '').toLowerCase()) return null;
   return { role: 'teacher', user, teacher: { ...data, id: user.uid } };
 }
 
