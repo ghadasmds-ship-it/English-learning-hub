@@ -263,7 +263,16 @@ export function App() {
         )}
 
         {/* ================= STUDENT EXPERIENCE ================= */}
-        {!showStaffLogin && currentRole === 'student' && (
+        {!showStaffLogin && currentRole === 'student' && !demoMode && (
+          <section className="max-w-xl mx-auto my-12 p-6 rounded-2xl border bg-white">
+            <h2 className="text-xl font-bold">Student access is being prepared</h2>
+            <p className="mt-2 text-slate-600">Student sign-in and progress storage are not yet connected to secure cloud accounts. Sample PINs and local browser records are disabled outside development demo mode.</p>
+            <button type="button" className="mt-5 rounded-xl bg-indigo-700 text-white px-5 py-3 font-semibold" onClick={() => setShowStaffLogin(true)}>
+              Teacher / Owner Sign In
+            </button>
+          </section>
+        )}
+        {!showStaffLogin && currentRole === 'student' && demoMode && (
           <>
             {!studentLoggedIn || !activeStudent ? (
               <StudentLogin
