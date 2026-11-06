@@ -423,13 +423,7 @@ export function App() {
           <div>
             English Learning Hub © 2026. Welcome Unit Pilot Edition.
           </div>
-          {demoMode && <div className="flex items-center gap-4 text-[11px] text-slate-400">
-            <span>Multi-Tenant Architecture</span>
-            <span aria-hidden="true">·</span>
-            <span>Firestore Rules Configured</span>
-            <span aria-hidden="true">·</span>
-            <span>Zero-PII Isolation</span>
-          </div>}
+          {demoMode && <span>Local demonstration — not for real student data</span>}
         </div>
       </footer>
     </div>
