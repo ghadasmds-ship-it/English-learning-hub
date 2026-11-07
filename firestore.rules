@@ -83,7 +83,8 @@ service cloud.firestore {
       allow create: if isTeacherActive(request.resource.data.teacherId) &&
         request.resource.data.studentId is string &&
         exists(/databases/$(database)/documents/students/$(request.resource.data.studentId)) &&
-        get(/databases/$(database)/documents/students/$(request.resource.data.studentId)).data.teacherId == request.auth.uid;
+        get(/databases/$(database)/documents/students/$(request.resource.data.studentId)).data.teacherId == request.auth.uid &&
+        request.resource.data.classId == get(/databases/$(database)/documents/students/$(request.resource.data.studentId)).data.classId;
       allow update: if false; // Attempts are immutable audit records
       allow delete: if false; // Immutable audit trail
     }
@@ -98,11 +99,14 @@ service cloud.firestore {
       allow create: if isTeacherActive(request.resource.data.teacherId) &&
         request.resource.data.studentId == studentId &&
         exists(/databases/$(database)/documents/students/$(studentId)) &&
-        get(/databases/$(database)/documents/students/$(studentId)).data.teacherId == request.auth.uid;
+        get(/databases/$(database)/documents/students/$(studentId)).data.teacherId == request.auth.uid &&
+        request.resource.data.classId == get(/databases/$(database)/documents/students/$(studentId)).data.classId;
       allow update: if isTeacherActive(resource.data.teacherId) &&
         request.resource.data.teacherId == resource.data.teacherId &&
         request.resource.data.studentId == resource.data.studentId &&
-        request.resource.data.classId == resource.data.classId;
+        request.resource.data.classId == resource.data.classId &&
+        get(/databases/$(database)/documents/students/$(studentId)).data.classId == resource.data.classId &&
+        get(/databases/$(database)/documents/students/$(studentId)).data.teacherId == request.auth.uid;
       allow delete: if isPlatformAdmin();
     }
 
