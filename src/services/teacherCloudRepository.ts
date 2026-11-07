@@ -1,6 +1,5 @@
-import { collection, doc, getDocs, query, where, addDoc, serverTimestamp, type DocumentData } from 'firebase/firestore';
+import { collection, getDocs, query, where, addDoc, serverTimestamp } from 'firebase/firestore';
 import { createCloudServices } from './firebaseClient';
-import type { ClassRoom } from '../types';
 
 /**
  * Authenticated teacher-scoped Firestore access.
