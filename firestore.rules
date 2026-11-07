@@ -40,7 +40,7 @@ service cloud.firestore {
     match /teachers/{teacherId} {
       allow read: if isTeacher(teacherId) || isPlatformAdmin();
       allow create: if isPlatformAdmin();
-      allow update: if isPlatformAdmin() || (isTeacher(teacherId) && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['licenseExpiresAt', 'isReadOnly', 'role', 'id', 'teacherId', 'subscriptionStatus', 'licenseId', 'plan', 'isAdmin']));
+      allow update: if isPlatformAdmin() || (isTeacher(teacherId) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName', 'name', 'photoURL', 'preferredLanguage']));
       allow delete: if isPlatformAdmin();
     }
 
@@ -106,12 +106,10 @@ service cloud.firestore {
       allow delete: if isPlatformAdmin();
     }
 
-    // Secure Parent Report Links: Verified token validation
+    // Parent report sharing links are retired. Reports are downloaded by teachers as PDFs.
+    // Legacy link documents, if any, are inaccessible from the client.
     match /parentReportLinks/{linkId} {
-      allow read: if isPlatformAdmin() || (isAuthenticated() && resource.data.teacherId == request.auth.uid); // Never expose token records publicly
-      allow create: if isAuthenticated() && isTeacherActive(request.resource.data.teacherId);
-      allow update: if isAuthenticated() && isTeacherActive(resource.data.teacherId) && request.resource.data.teacherId == resource.data.teacherId;
-      allow delete: if isAuthenticated() && isTeacher(resource.data.teacherId);
+      allow read, write: if false;
     }
   }
 }
