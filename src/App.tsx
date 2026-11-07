@@ -216,7 +216,7 @@ export function App() {
         )}
 
         {/* ================= TEACHER EXPERIENCE ================= */}
-        {demoMode && currentRole === 'teacher' && (
+        {demoMode && currentRole === 'teacher' && activeTeacher && (
           <>
             {currentView === 'teacher-dashboard' && (
               <TeacherDashboard
