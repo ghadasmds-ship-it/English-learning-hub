@@ -5,6 +5,7 @@ import { Navbar } from './components/common/Navbar';
 import { StaffLogin } from './components/common/StaffLogin';
 import { observeStaffSession, signOutStaff, type StaffSession } from './services/staffAuthService';
 import { StudentHome } from './components/student/StudentHome';
+import { CurriculumPreview } from './components/student/CurriculumPreview';
 import { StudentLogin } from './components/student/StudentLogin';
 import { UnitOverview } from './components/student/UnitOverview';
 import { MonthsHub } from './components/student/months/MonthsHub';
@@ -277,6 +278,7 @@ export function App() {
             </button>
           </section>
         )}
+        {!showStaffLogin && currentRole === 'student' && !demoMode && <CurriculumPreview />}
         {!showStaffLogin && currentRole === 'student' && demoMode && (
           <>
             {!studentLoggedIn || !activeStudent ? (
