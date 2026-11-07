@@ -78,7 +78,7 @@ export function CloudTeacherDashboard({ teacherId }: { teacherId: string }) {
         <h2 className="font-bold">Create a Class</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <label className="text-sm">Class name<input required value={name} onChange={e => setName(e.target.value)} className="block border rounded-lg p-2 w-full mt-1" /></label>
-          <label className="text-sm">Stage<select value={stageLevel} onChange={e => setStageLevel(e.target.value)} className="block border rounded-lg p-2 w-full mt-1"><option value="primary">Primary</option><option value="intermediate">Intermediate</option><option value="secondary">Secondary</option></select></label>
+          <label className="text-sm">Stage<select value={stageLevel} onChange={e => { setStageLevel(e.target.value); setGrade('1'); }} className="block border rounded-lg p-2 w-full mt-1"><option value="primary">Primary</option><option value="intermediate">Intermediate</option><option value="secondary">Secondary</option></select></label>
           <label className="text-sm">Grade<select value={grade} onChange={e => setGrade(e.target.value)} className="block border rounded-lg p-2 w-full mt-1">{Array.from({length: stageLevel === 'primary' ? 6 : 3}, (_, i) => <option key={i+1} value={String(i+1)}>Grade {i+1}</option>)}</select></label>
           <label className="text-sm">Section<input required value={section} onChange={e => setSection(e.target.value)} className="block border rounded-lg p-2 w-full mt-1" /></label>
           <label className="text-sm">Academic year<input required value={academicYear} onChange={e => setAcademicYear(e.target.value)} className="block border rounded-lg p-2 w-full mt-1" /></label>
@@ -96,7 +96,7 @@ export function CloudTeacherDashboard({ teacherId }: { teacherId: string }) {
           </select>
         </label>
         <label className="block text-sm">Student names
-          <textarea required rows={5} value={studentNames} onChange={e => setStudentNames(e.target.value)} className="block border rounded-lg p-2 w-full mt-1" placeholder={'Student One\\nStudent Two'} />
+          <textarea required rows={5} value={studentNames} onChange={e => setStudentNames(e.target.value)} className="block border rounded-lg p-2 w-full mt-1" placeholder={'Student One\nStudent Two'} />
         </label>
         <button type="submit" disabled={saving || !selectedClassId} className="rounded-xl bg-indigo-700 text-white px-5 py-2 font-bold disabled:opacity-50">{saving ? 'Importing…' : 'Import Names'}</button>
         {importResult && <p role="status" className="text-green-800 text-sm">{importResult}</p>}
