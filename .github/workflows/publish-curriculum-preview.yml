@@ -1,4 +1,5 @@
 name: Publish safe curriculum preview
+# Fresh deployment attempt after Pages branch rule update.
 on:
   push:
     branches: [fix/auth-tenant-isolation]
